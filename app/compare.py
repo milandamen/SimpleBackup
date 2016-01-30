@@ -53,20 +53,11 @@ def generateDiffList(snapshot):
 
 # Compare 2 snapshots; outputs new and changed files
 def diffSnapshots(prevSnapshot, snapshot):
-    print('\n\n\n')
     l_prevSnapshot = prevSnapshot.toList()
     l_snapshot = snapshot.toList()
-    for line in l_prevSnapshot:
-        try:
-            print(line)
-        except ValueError:
-            pass
-    print('\n\n\n')
     
     diffCounterHelper = DiffCounterHelper(len(l_snapshot))
     diffList = [x for x in l_snapshot if x not in l_prevSnapshot and diffCounterHelper.increment()]       # Get new or changed files compared to prevSnapshot
-    if snapshot.mode == 'build' and prevSnapshot.mode == 'read':
-        diffList.pop(0)
     
     finalDiffList = [snapshot.sourcePath]
     for line in diffList:

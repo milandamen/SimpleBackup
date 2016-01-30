@@ -24,6 +24,7 @@ def copyFiles(diffList):
     
     print('\nStarting copying of files..')
     
+    successCount = 0
     errorCount = 0
     ignoreErrors = False
     firstLine = True
@@ -41,6 +42,10 @@ def copyFiles(diffList):
                     os.makedirs(destFileDir)                    # Recursively make the directories
                 
                 shutil.copyfile(file, destFilePath)
+                
+                successCount += 1
+                if successCount % 1000 == 0:
+                    print('Copied %i files so far..' % successCount)
             except Exception as e:
                 helpers.uPrint('Error copying file %s: %s' % (file, str(e)))
                 errorCount += 1

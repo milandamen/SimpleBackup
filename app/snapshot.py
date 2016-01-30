@@ -1,5 +1,4 @@
 import os
-import io
 import time
 import codecs
 import app.exceptions
@@ -9,47 +8,24 @@ import app.exceptions
 ##
 
 class Snapshot:
-    def __init__(self, mode):
-        if mode == 'build':
-            self.fileList = io.StringIO()               # Build massive string
-        elif mode == 'read':
-            self.fileList = []                          # List to be populated elsewhere
-        else:
-            raise InvalidSnapshotModeException('Expected mode to be "build" or "read", "%s" given.' % mode)
-        
+    def __init__(self):
+        self.fileList = []                              # List to be populated elsewhere
         self.saveDate = None
         self.sourcePath = ''
-        self.mode = mode                                # Modes: build, read
         self.count = 0
     
     def write(self, string):
-        if self.mode == 'build':
-            print(string, file=self.fileList)
-        elif self.mode == 'read':
-            self.fileList.append(string)
-        else:
-            raise InvalidSnapshotModeException('Expected mode to be "build" or "read", "%s" given.' % self.mode)
-        
+        self.fileList.append(string)
         self.count += 1
     
     def toList(self):
-        if self.mode == 'build':
-            return str(self).splitlines()
-        elif self.mode == 'read':
-            return self.fileList
-        else:
-            raise InvalidSnapshotModeException('Expected mode to be "build" or "read", "%s" given.' % self.mode)
+        return self.fileList
     
     def __repr__(self):
-        if self.mode == 'build':
-            return self.fileList.getvalue()
-        elif self.mode == 'read':
-            s = ''
-            for line in self.fileList:
-                s += line + '\n'
-            return s
-        else:
-            raise InvalidSnapshotModeException('Expected mode to be "build" or "read", "%s" given.' % self.mode)
+        s = ''
+        for line in self.fileList:
+            s += line + '\n'
+        return s
     
     def __len__(self):
         return self.count
@@ -62,14 +38,17 @@ def generateSnapshot(sourcePath):
     files = generateFileList(sourcePath)
     
     if len(files):
-        snapshot = Snapshot('build')
+        snapshot = Snapshot()
         snapshot.sourcePath = sourcePath
         snapshot.write(sourcePath)                      # Put sourcePath on first line
         
         for file in files:
-            mtime = int(os.path.getmtime(file))        # File last modified time
-            snapshot.write(u'' + str(mtime) + '\t' + file)
-        
+            try:
+                mtime = int(os.path.getmtime(file))        # File last modified time, can give an exception if file path is too long in Windows
+                snapshot.write(u'' + str(mtime) + '\t' + file)
+            except OSError:
+                pass
+
         print('Generated snapshot.')
         print('Saving snapshot to disk..')
         
@@ -89,7 +68,7 @@ def generateFileList(sourcePath):
         for filename in files:
             fileList.append(os.path.join(path, filename))
             count += 1
-            if count % 1000 == 0:
+            if count % 5000 == 0:
                 print('Scanned %i files so far..' % count)
             
     return fileList
@@ -150,7 +129,7 @@ def getLast():
 
 # Load a snapshot from file
 def readSnapshot(snapshotPath):
-    snapshot = Snapshot('read')
+    snapshot = Snapshot()
     snapshot.saveDate = int(snapshotPath[:-len('.snapshot')])
     firstLine = True
     

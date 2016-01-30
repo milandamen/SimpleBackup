@@ -1,4 +1,4 @@
-import setup
-import snapshot
-import compare
-import backup
+import app.setup
+import app.snapshot
+import app.compare
+import app.backup

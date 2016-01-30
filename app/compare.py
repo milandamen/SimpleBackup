@@ -1,37 +1,70 @@
-import snapshot as app_snapshot
 import os
+import sys
+import io
 import time
-import exceptions
+import codecs
+import app.snapshot as app_snapshot
+import app.exceptions
+import app.helpers as helpers
 
 ##
 # Compare 2 snapshots to eachother
 ##
+
+class DiffCounterHelper:
+    def __init__(self, maxLen):
+        self.count = 0
+        self.maxLen = maxLen
+        self.lastPercentage = 0
+        
+    def increment(self):
+        self.count += 1
+        percentage = int((self.count / self.maxLen) * 100)
+        if percentage - self.lastPercentage >= 5:
+            print('Compared ' + str(percentage) + '% of files so far..')
+            self.lastPercentage = percentage
+        return True
 
 # Return a list of files that changed between this snapshot and the previous one
 def generateDiffList(snapshot):
     prevSnapshot = app_snapshot.getPrevious(snapshot)
     
     if not prevSnapshot:
-        print 'No earlier snapshot found for the given date and source path'
+        print('No earlier snapshot found for the given date and source path.')
         printDiffList(snapshot)
+        print('')
+        print('No further action required.')
         return snapshot.toList()
-    
+        
+    print('Generating diff list..')
     diffList = diffSnapshots(prevSnapshot, snapshot)
+    print('Generated diff list.\n')
     
     printDiffList(diffList)
     
-    print '\nSaving difference to disk..'
+    print('\nSaving difference to disk..')
     diffFileName = writeDiffList(diffList)
-    print 'Difference saved to disk as ' + diffFileName
+    print('Difference saved to disk as %s.' % diffFileName)
+    print('')
+    print('Open the diff file in a text editor and remove lines of files you don\'t want to copy. DO NOT REMOVE THE FIRST LINE.')
+    print('Then open SimpleBackup again and select option 3 to start the backup process.')
     
     return diffList
 
 # Compare 2 snapshots; outputs new and changed files
 def diffSnapshots(prevSnapshot, snapshot):
+    print('\n\n\n')
     l_prevSnapshot = prevSnapshot.toList()
     l_snapshot = snapshot.toList()
+    for line in l_prevSnapshot:
+        try:
+            print(line)
+        except ValueError:
+            pass
+    print('\n\n\n')
     
-    diffList = [x for x in l_snapshot if x not in l_prevSnapshot]       # Get new or changed files compared to prevSnapshot
+    diffCounterHelper = DiffCounterHelper(len(l_snapshot))
+    diffList = [x for x in l_snapshot if x not in l_prevSnapshot and diffCounterHelper.increment()]       # Get new or changed files compared to prevSnapshot
     if snapshot.mode == 'build' and prevSnapshot.mode == 'read':
         diffList.pop(0)
     
@@ -47,14 +80,14 @@ def diffSnapshots(prevSnapshot, snapshot):
 
 # Write differences to disk
 def writeDiffList(diffList):
-    saveDate = long(time.time())
+    saveDate = int(time.time())
     
-    f = open('snapshots/%s.diff' % saveDate, 'w')   # Make a file with current time in seconds as name
+    f = codecs.open('snapshots/%s.diff' % saveDate, encoding='utf-16', mode='w')            # Make a file with current time in seconds as name
     for path in diffList:
         f.write(path + '\n')
     f.close()
     
-    return '%s.diff' % saveDate                     # Return new filename
+    return '%s.diff' % saveDate                         # Return new filename
     
 # Get last difflist from disk
 def getLast():
@@ -66,11 +99,11 @@ def getLast():
     diffs = [ fi for fi in diffs if fi.endswith(".diff") ]
         
     lastPath = None
-    lastSaveDate = 0L
+    lastSaveDate = 0
     while len(diffs):
         for file in diffs:
             try:
-                curSaveDate = long(file[:-len('.diff')])
+                curSaveDate = int(file[:-len('.diff')])
                 if curSaveDate > lastSaveDate:
                     lastPath = file
                     lastSaveDate = curSaveDate
@@ -86,7 +119,7 @@ def getLast():
 def readDiffList(diffPath):
     diffList = []
     
-    f = open('snapshots/' + diffPath, 'r')
+    f = codecs.open('snapshots/' + diffPath, encoding='utf-16', mode='r')
     
     for line in f:
         if line != '' and line != '\n':
@@ -95,27 +128,27 @@ def readDiffList(diffPath):
     f.close()
     
     if len(diffList) == 0:
-        raise CorruptDiffListException('Diff file does not have any lines')
+        raise CorruptDiffListException('Diff file does not have any lines!')
     if not os.path.isdir(diffList[0]):
-        raise CorruptDiffListException('First line of diff file is not source path')
+        raise CorruptDiffListException('First line of diff file is not source path!')
     
-    print 'Loaded diff %s\n' % diffPath
-    #printDiffList(diffList)
+    print('Loaded diff %s\n' % diffPath)
     
     return diffList
 
 
 # Print the new and changed files when 2 snapshots are compared
 def printDiffList(list):
-    print 'New or changed files:'
-    print '----------------------'
+    print('New or changed files:')
+    print('----------------------')
     
     if len(list) > 30:
-        print '(List too long to display)'
+        print('(List too long to display)')
         return
     
     if isinstance(list, app_snapshot.Snapshot):
-        print list
+        for line in list.toList():
+            helpers.uPrint(line)
     else:
         firstLine = True
         for line in list:
@@ -123,4 +156,4 @@ def printDiffList(list):
                 firstLine = False
                 continue
                 
-            print line
+            helpers.uPrint(line)

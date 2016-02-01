@@ -56,7 +56,7 @@ def generateSnapshot(sourcePath):
         
         print('Snapshot saved to disk.\n')
         
-        return snapshot                                 # Return snapshot as big multi-line string
+        return snapshot
     else:
         print('No files found in directory: %s' % sourcePath)
 

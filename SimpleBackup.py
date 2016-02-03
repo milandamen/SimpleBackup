@@ -31,7 +31,7 @@ if response == '1':
     option = 'snapshot'
     
     while True:
-        sourcePath = u'' + input('Enter the path from which you want to snapshot: ')
+        sourcePath = '' + input('Enter the path from which you want to snapshot: ')
         if os.path.isdir(sourcePath):
             break
         else:

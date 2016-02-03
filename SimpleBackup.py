@@ -9,14 +9,21 @@ import sys
 print('SimpleBackup by D\'Arvit!')
 print('Site: darvit.nl\n')
 
-print('Available options:')
-print('1: Generate new snapshot')
-print('2: Use last snapshot')
-print('3: Use last diff file')
-print('q: Exit SimpleBackup')
-
-response = input('Run option: ').lower()
-print('')
+response = ''
+sourcePath = ''
+if len(sys.argv) > 1:
+    response = sys.argv[1]
+    otherArgs = sys.argv[2:]
+    sourcePath = ' '.join(otherArgs)
+else:
+    print('Available options:')
+    print('1: Generate new snapshot')
+    print('2: Use last snapshot')
+    print('3: Use last diff file')
+    print('q: Exit SimpleBackup')
+    
+    response = input('Run option: ').lower()
+    print('')
 
 if response == 'q':
     exit()
@@ -30,12 +37,17 @@ diffList = None
 if response == '1':
     option = 'snapshot'
     
-    while True:
-        sourcePath = '' + input('Enter the path from which you want to snapshot: ')
-        if os.path.isdir(sourcePath):
-            break
-        else:
+    if sourcePath != '':
+        if not os.path.isdir(sourcePath):
             print('No directory with this name exists: ' + sourcePath)
+            exit(-1)
+    else:
+        while True:
+            sourcePath = '' + input('Enter the path from which you want to snapshot: ')
+            if os.path.isdir(sourcePath):
+                break
+            else:
+                print('No directory with this name exists: ' + sourcePath)
     
     snapshot = app.snapshot.generateSnapshot(sourcePath)
 if response == '2':

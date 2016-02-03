@@ -45,7 +45,7 @@ def generateSnapshot(sourcePath):
         for file in files:
             try:
                 mtime = int(os.path.getmtime(file))        # File last modified time, can give an exception if file path is too long in Windows
-                snapshot.write(u'' + str(mtime) + '\t' + file)
+                snapshot.write('' + str(mtime) + '\t' + file)
             except OSError:
                 pass
 

@@ -14,7 +14,7 @@ import app.helpers as helpers
 class DiffCounterHelper:
     def __init__(self, maxLen):
         self.count = 0
-        self.maxLen = maxLen * 2
+        self.maxLen = maxLen
         self.lastPercentage = 0
         
     def increment(self):

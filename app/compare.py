@@ -14,7 +14,7 @@ import app.helpers as helpers
 class DiffCounterHelper:
     def __init__(self, maxLen):
         self.count = 0
-        self.maxLen = maxLen
+        self.maxLen = maxLen * 2
         self.lastPercentage = 0
         
     def increment(self):
@@ -119,9 +119,9 @@ def readDiffList(diffPath):
     f.close()
     
     if len(diffList) == 0:
-        raise CorruptDiffListException('Diff file does not have any lines!')
+        raise app.exceptionsCorruptDiffListException('Diff file does not have any lines!')
     if not os.path.isdir(diffList[0]):
-        raise CorruptDiffListException('First line of diff file is not source path!')
+        raise app.exceptionsCorruptDiffListException('First line of diff file is not source path!')
     
     print('Loaded diff %s\n' % diffPath)
     

@@ -93,7 +93,7 @@ def getPrevious(snapshot):
         snapshots.extend(files)
         break
     
-    snapshots = [ fi for fi in snapshots if fi.endswith(".snapshot") ]
+    snapshots = [ fi for fi in snapshots if fi.endswith('.snapshot') ]
         
     lastPath = None
     lastSaveDate = 0
@@ -105,7 +105,10 @@ def getPrevious(snapshot):
                     lastPath = file
                     lastSaveDate = curSaveDate
             except ValueError:
-                pass
+                snapshots.remove(file)
+                lastPath = None
+                lastSaveDate = 0
+                break
         
         if lastPath == None:
             return
@@ -115,6 +118,7 @@ def getPrevious(snapshot):
         else:
             snapshots.remove(lastPath)
             lastPath = None
+            lastSaveDate = 0
 
 # Determine if the found snapshot has the same source path as the current snapshot
 def validSnapshotSourcePath(snapshotPath, sourcePath):

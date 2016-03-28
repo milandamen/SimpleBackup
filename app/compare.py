@@ -21,7 +21,8 @@ class DiffCounterHelper:
         self.count += 1
         percentage = int((self.count / self.maxLen) * 100)
         if percentage - self.lastPercentage >= 5:
-            print('Compared ' + str(percentage) + '% of files so far..')
+            print('Still working..')
+            #print('Compared ' + str(percentage) + '% of files so far..')       # TODO: Currently not working correctly 
             self.lastPercentage = percentage
         return True
 

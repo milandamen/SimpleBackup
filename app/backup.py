@@ -56,7 +56,7 @@ def copyFiles(diffList):
         if ignoreErrors == False and errorCount >= 20:
             response = input('Encountered 20 errors. Do you want to continue? (y/N): ').lower()
             if response == 'y':
-                ignoreErrors = Trie
+                ignoreErrors = True
             else:
                 break
     
